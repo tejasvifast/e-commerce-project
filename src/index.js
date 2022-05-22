@@ -2,10 +2,18 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const route = require('./routes/route')
 const mongoose = require('mongoose')
+const multer = require('multer')
+
 const app = express()
 app.use(bodyParser.json())
 
 app.use(bodyParser.urlencoded({extended:true}))
+
+var multipart = require('connect-multiparty');
+global.app = module.exports = express();
+app.use(multipart());
+
+
 
 mongoose.connect("mongodb+srv://pragya_user1:tfr9Y2SlmidKsL1L@cluster0.e7bog.mongodb.net/ProjectXYZ-db?retryWrites=true&w=majority", {
     usenewurlParser: true
