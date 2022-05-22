@@ -53,11 +53,16 @@ const getUserDetails = async function (req, res) {
 
 //************************************************************************************************************************************************ */
 
-const updateUserDetails = async function (req, res, file) {
+const updateUserDetails = async function (req, res) {
     try {
         const userId = req.params.userId
-        const formData = file
-        console.log(formData, userId);
+        const formData = req.files
+        const data = req.body
+        const {fname, lname} = data
+        const updateDetails = await userModel.findByIdAndUpdate({_id: userId},{fname: data.fname, lname:data.lname},{new:true})
+        return res.status(200).send({ status: true, message: "User profile details", data: updateDetails })
+
+
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
