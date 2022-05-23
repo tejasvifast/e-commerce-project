@@ -1,15 +1,20 @@
-
 const userModel = require('../models/userModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const multer = require('multer')
+const {uploadFile} = require('../utils/aws')
 
 const createUser = async function (req, res) {
     try {
         let requestBody = req.body
+        console.log(requestBody)
+        let files = req.files
+        console.log(files);
+        let imageUrl = await uploadFile(files[0])
+        console.log(imageUrl);
         const { password } = requestBody
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
+        requestBody.profileImage = imageUrl
         let userCreated = await userModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: userCreated })
     }

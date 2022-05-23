@@ -53,6 +53,8 @@ const getProductById = async function (req, res) {
     }
 }
 
+
+
 //****************************************************DELETE BY ID************************************************************************************ */
 
 const deleteProductById = async function (req, res) {
