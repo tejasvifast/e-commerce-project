@@ -59,7 +59,6 @@ const getUserDetails = async function (req, res) {
 
 const updateUserDetails = async function (req, res) {
     try {
-
         const userId = req.params.userId
         const formData = req.files
         const updateData = req.body
@@ -76,8 +75,6 @@ const updateUserDetails = async function (req, res) {
             let updateProfileImage = await uploadFile(formData[0])
             updateData.profileImage = updateProfileImage
         }
-
-
         if (fname) {
             if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is not valid" })
             if (!validString(fname)) return res.status(400).send({ status: false, msg: "fname should not contain number" })
