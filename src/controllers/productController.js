@@ -1,5 +1,7 @@
 
 const productModel = require('../models/productModel')
+const {uploadFile} = require('../utils/aws')
+
 
 //******************************************CREATE PRODUCT************************************************************ */
 
@@ -23,7 +25,7 @@ const getProduct = async function (req, res) {
         const filterQuery = { isDeleted: false }
 
         if (Object.keys(requestQuery).length > 0) {
-            if (size) { filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) } }// {$in:["X","S"]}
+            if (size) { filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) } }// {$in:["X","S"]}/////////////////////////////
             if (name) { filterQuery.title = name.trim() }
             if (priceGreaterThan && priceLessThan) { filterQuery.price = { $gte: priceGreaterThan, $lte: priceLessThan } }
             if (priceGreaterThan) { filterQuery.price = { $gte: priceGreaterThan } }
@@ -53,7 +55,37 @@ const getProductById = async function (req, res) {
     }
 }
 
+///**************************************************UPDATE PRODUCTS******************************************************************************** */
 
+
+const updateProductDetals = async function (req, res) {
+    try {
+        const productId = req.params.productId
+        const formData = req.files
+        let imageUrl = await uploadFile(formData[0])
+        const data = req.body
+        let filterQuery = {isDeleted:false}
+        const {title,description,price,currencyId,currencyFormat,isFreeShipping,productImage,style,availableSizes,installments} = data //destructuring
+        if(title){filterQuery.title = title}
+        if(description){filterQuery.description = description}
+        if(price){filterQuery.price = price}
+        if(currencyId){filterQuery.currencyId = currencyId}
+        if(currencyFormat){filterQuery.currencyFormat = currencyFormat}
+        if(isFreeShipping){filterQuery.isFreeShipping = isFreeShipping}
+        if(productImage){filterQuery.productImage = imageUrl}
+        if(style){filterQuery.style = style}
+        if(availableSizes){filterQuery.availableSizes = availableSizes}
+        if(installments){filterQuery.installments = installments}
+
+        const updateDetails = await productModel.findByIdAndUpdate({_id: productId},filterQuery,{new:true})
+        return res.status(200).send({ status: true, message: "product details updated successfully", data: updateDetails })
+
+
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, error: err.message })
+    }
+}
 
 //****************************************************DELETE BY ID************************************************************************************ */
 
@@ -71,4 +103,4 @@ const deleteProductById = async function (req, res) {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------
 
-module.exports = { createProduct, getProduct, getProductById, deleteProductById }
+module.exports = { createProduct, getProduct, getProductById,updateProductDetals, deleteProductById }
