@@ -1,16 +1,14 @@
 const userModel = require('../models/userModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {uploadFile} = require('../utils/aws')
+const { uploadFile } = require('../utils/aws')
+const { isValid, isValidObjectType, isValidBody, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId, validDate } = require('../utils/validation')
 
 const createUser = async function (req, res) {
     try {
         let requestBody = req.body
-        console.log(requestBody)
         let files = req.files
-        console.log(files);
         let imageUrl = await uploadFile(files[0])
-        console.log(imageUrl);
         const { password } = requestBody
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
@@ -61,14 +59,67 @@ const getUserDetails = async function (req, res) {
 
 const updateUserDetails = async function (req, res) {
     try {
+
         const userId = req.params.userId
         const formData = req.files
-        const data = req.body
-        const {fname, lname} = data
-        const updateDetails = await userModel.findByIdAndUpdate({_id: userId},{fname: data.fname, lname:data.lname},{new:true})
-        return res.status(200).send({ status: true, message: "User profile details", data: updateDetails })
+        const updateData = req.body
+
+        const { address, fname, lname, email, phone, password } = updateData      // undefined {}       []  {}
+
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, msg: "invalid user Id" })
+        let findUserId = await userModel.findById({ _id: userId })
+        if (!findUserId) return res.status(404).send({ status: false, msg: "user not found" })
+
+        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })   //fordata handle
+
+        if (formData) {
+            let updateProfileImage = await uploadFile(formData[0])
+            updateData.profileImage = updateProfileImage
+        }
 
 
+        if (fname) {
+            if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is not valid" })
+            if (!validString(fname)) return res.status(400).send({ status: false, msg: "fname should not contain number" })
+        }
+        if (lname) {
+            if (!isValid(lname)) return res.status(400).send({ status: false, msg: "lname is not valid" })
+            if (!validString(lname)) return res.status(400).send({ status: false, msg: "lname should not contain number" })
+        }
+        if (email) {
+            if (!validEmail(email)) return res.status(400).send({ status: false, msg: "email is not valid" })
+        }
+        if (phone) {
+            if (!validMobileNum(phone)) return res.status(400).send({ status: false, msg: "phone is not valid" })
+        }
+        if (password) {
+            if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is not valid" })
+            updateData.password = await bcrypt.hash(password, 10)
+        }
+        if (address) {
+           // updateData.address = JSON.parse(address)
+            let address = JSON.parse(address)
+            console.log(address);
+            // if(address.shipping){
+            //     if(address.shipping.street){}
+            //     if(address.shipping.city)
+            //     if(address.shipping.pincode)
+
+            // }
+            // if(address.billing){
+            //     if(address.billing.street)
+            //     if(address.billing.city)
+            //     if(address.billing.pincode)
+
+
+            
+
+            // }
+        }
+
+
+        const updateDetails = await userModel.findByIdAndUpdate({ _id: userId }, updateData, { new: true })
+        return res.status(200).send({ status: true, message: "User profile updated successfully", data: updateDetails })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
