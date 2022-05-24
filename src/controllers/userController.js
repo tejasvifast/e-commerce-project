@@ -97,28 +97,44 @@ const updateUserDetails = async function (req, res) {
             updateData.password = await bcrypt.hash(password, 10)
         }
         if (address) {
-           // updateData.address = JSON.parse(address)
-            let address = JSON.parse(address)
-            console.log(address);
-            // if(address.shipping){
-            //     if(address.shipping.street){}
-            //     if(address.shipping.city)
-            //     if(address.shipping.pincode)
+             let address1= JSON.parse(address) 
+            console.log(address1);
 
-            // }
-            // if(address.billing){
-            //     if(address.billing.street)
-            //     if(address.billing.city)
-            //     if(address.billing.pincode)
+            const findAddress= await userModel.findOne({_id: userId})
 
-
-            
-
-            // }
+            if(address1.shipping){
+                const {street,city,pincode} = address1.shipping
+                if(street){
+                    if(!isValid(street)) return res.status(400).send({ status: false, msg: "shipping street is not valid " })
+                    findAddress.address.shipping.street=street
+                }
+                if(city){
+                    if(!isValid(city)) return res.status(400).send({ status: false, msg: "shipping city is not valid " })
+                    findAddress.address.shipping.city=city
+                }
+                if(pincode){
+                    if(!isValid(pincode)) return res.status(400).send({ status: false, msg: "shipping pincode is not valid " })
+                    findAddress.address.shipping.pincode=pincode
+                }
+            }
+            if(address1.billing){
+                const {street,city,pincode} = address1.billing
+                if(street){
+                    if(!isValid(street)) return res.status(400).send({ status: false, msg: "billing street is not valid " })
+                    findAddress.address.billing.street=street
+                }
+                if(city){
+                    if(!isValid(city)) return res.status(400).send({ status: false, msg: "billing city is not valid " })
+                    findAddress.address.billing.city=city
+                }
+                if(pincode){
+                    if(!isValid(pincode)) return res.status(400).send({ status: false, msg: "billing pincode is not valid " })
+                    findAddress.address.billing.pincode=pincode
+                }
+            }
+             updateData.address = findAddress.address
         }
-
-
-        const updateDetails = await userModel.findByIdAndUpdate({ _id: userId }, updateData, { new: true })
+         const updateDetails = await userModel.findByIdAndUpdate({ _id: userId }, updateData, { new: true })
         return res.status(200).send({ status: true, message: "User profile updated successfully", data: updateDetails })
     }
     catch (err) {
