@@ -16,9 +16,9 @@ const isValidObjectType = (value) => {
 
 const  isValidBody = (object) => {
   if (Object.keys(object).length > 0) {
-    return false
+    return true
   } else {
-    return true;
+    return false;
   }
 };
 
