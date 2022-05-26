@@ -1,62 +1,80 @@
 const userModel = require('../models/userModel')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const axios = require("axios");
 const { uploadFile } = require('../utils/aws')
-const { isValid, isValidObjectType, isValidBody, validString, validMobileNum, validEmail, validPwd, isValidObjectId } = require('../utils/validation')
+const { isValid, isValidObjectType, isValidBody, validSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum } = require('../utils/validation')
 
 const createUser = async function (req, res) {
     try {
         let requestBody = req.body
-
+        let files = req.files
         if (!isValidBody(requestBody)) return res.status(400).send({ status: false, msg: "provide details" })
 
-        const { fname, lname, email, phone, password, address } = requestBody
-        if (! isValid(fname)) return res.status(400).send({ status: false, message: "fname is mandatory" })
-        if(validString(fname)) return res.status(201).send({ status: false, message: "fname should not contain number" })
+        let { fname, lname, email, phone, password, address } = requestBody
+        if (!isValid(fname)) return res.status(400).send({ status: false, message: "fname is mandatory" })
+        if (!isValidString(fname)) return res.status(201).send({ status: false, message: "fname should not contain number" })
 
-        if (!isValid (lname)) return res.status(400).send({ status: false, message: "lname is mandatory" })
-        if(validString(lname)) return res.status(400).send({ status: false, message: "lname should not contain number" })
+        if (!isValid(lname)) return res.status(400).send({ status: false, message: "lname is mandatory" })
+        if (!isValidString(lname)) return res.status(400).send({ status: false, message: "lname should not contain number" })
 
-        if (! isValid(email)) return res.status(400).send({ status: false, message: "email is mandatory" })
-        if(validEmail(email)) return res.status(400).send({ status: false, message: "email not valid" })
-        let uniqueEmail = await userModel.findOne({email:email})
-        if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
+        if (!isValid(email)) return res.status(400).send({ status: false, message: "email is mandatory" })
+        if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "email not valid" })
+        // let uniqueEmail = await userModel.findOne({email:email})
+        // if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
 
-        if (! isValid(phone)) return res.status(400).send({ status: false, message: "phone is mandatory" })
-        if(validMobileNum(phone)) return res.status(400).send({ status: false, message: "phone not valid" })
-        let uniquephone = await userModel.findOne({phone:phone})
-        if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
-
-
-        if (! isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
-        // console.log(typeof (address));//in string
-        // address= JSON.parse(address) 
-        // console.log(address);
-        // if (!isValid(address)) return res.status(400).send({ status: false, message: "address is mandatory" })
+        if (!isValid(phone)) return res.status(400).send({ status: false, message: "phone is mandatory" })
+        if (!isValidMobileNum(phone)) return res.status(400).send({ status: false, message: "phone not valid" })
+        // let uniquephone = await userModel.findOne({phone:phone})
+        // if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
 
 
-        // if(! isValid(address1.shipping)) return res.status(400).send({ status: false, message: "shipping address is mandatory" })
-        // if(! isValid(address1.shipping.street)) return res.status(400).send({ status: false, message: "shipping street is mandatory" })
-        // if(! isValid(address1.shipping.city)) return res.status(400).send({ status: false, message: "shipping city is mandatory" })
-        // if(! isValid(address1.shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode is mandatory" })
+        if (!isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
+
+        if (!address) return res.status(400).send({ status: false, message: "address is mandatory" })
+        address = JSON.parse(address)
+
+        let { shipping, billing } = address
+
+        if (!shipping) return res.status(400).send({ status: false, message: "shipping address is mandatory" })
+        else {
+            let { street, city, pincode } = shipping
+            if (!street) return res.status(400).send({ status: false, message: "shipping street is mandatory" })
+            if (!city) return res.status(400).send({ status: false, message: "shipping city is mandatory" })
+            if (!pincode) return res.status(400).send({ status: false, message: "shipping pincode is mandatory" })
+            let options = {
+                method: "GET",
+                url: `https://api.postalpincode.in/pincode/${pincode}`
+            }
+            let result = await axios(options)
+            if(!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
+            const cityByPincode = result.data[0].PostOffice[0].District
+            if(city.toLowerCase()!==cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
+        }
+
+        if (!billing) return res.status(400).send({ status: false, message: "billing address is mandatory" })
+        else {
+            let { street, city, pincode } = billing
+            if (!street) return res.status(400).send({ status: false, message: "billing street is mandatory" })
+            if (!city) return res.status(400).send({ status: false, message: "billing city is mandatory" })
+            if (!pincode) return res.status(400).send({ status: false, message: "billing pincode is mandatory" })
+            let options = {
+                method: "GET",
+                url: `https://api.postalpincode.in/pincode/${pincode}`
+            }
+            let result = await axios(options)
+            if(!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
+            const cityByPincode = result.data[0].PostOffice[0].District
+            if(city.toLowerCase()!==cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
+        }
 
 
-        // if(! isValid(address1.billing)) return res.status(400).send({ status: false, message: "billing address is mandatory" })
-        // if(! isValid(address1.billing.street)) return res.status(400).send({ status: false, message: "billing street is mandatory" })
-        // if(! isValid(address1.billing.city)) return res.status(400).send({ status: false, message: "billing city is mandatory" })
-        // if(! isValid(address1.billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode is mandatory" })
-
-
-
-
-        let files = req.files
         let imageUrl = await uploadFile(files[0])
-        //if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+        if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
-        requestBody.address = JSON.parse(address)
+        requestBody.address = address
         requestBody.profileImage = imageUrl
-        //if(! profileImage) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         let userCreated = await userModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: userCreated })
     }
@@ -90,7 +108,7 @@ const loginUser = async function (req, res) {
 const getUserDetails = async function (req, res) {
     try {
         const userId = req.params.userId
-        if(! isValidObjectId(userId)) return res.status(400).send({ status: false, message: "invalid user Id.." })
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "invalid user Id.." })
         const findUserId = await userModel.findById({ _id: userId })
         if (!findUserId) return res.status(404).send({ status: false, message: "user details not found..." })
         return res.status(200).send({ status: true, message: "User profile details", data: findUserId })
@@ -122,17 +140,17 @@ const updateUserDetails = async function (req, res) {
         }
         if (fname) {
             if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is not valid" })
-            if (validString(fname)) return res.status(400).send({ status: false, msg: "fname should not contain number" })
+            if (!isValidString(fname)) return res.status(400).send({ status: false, msg: "fname should not contain number" })
         }
         if (lname) {
             if (!isValid(lname)) return res.status(400).send({ status: false, msg: "lname is not valid" })
-            if (validString(lname)) return res.status(400).send({ status: false, msg: "lname should not contain number" })
+            if (!isValidString(lname)) return res.status(400).send({ status: false, msg: "lname should not contain number" })
         }
         if (email) {
-            if (validEmail(email)) return res.status(400).send({ status: false, msg: "email is not valid" })
+            if (!isValidEmail(email)) return res.status(400).send({ status: false, msg: "email is not valid" })
         }
         if (phone) {
-            if (validMobileNum(phone)) return res.status(400).send({ status: false, msg: "phone is not valid" })
+            if (!isValidMobileNum(phone)) return res.status(400).send({ status: false, msg: "phone is not valid" })
         }
         if (password) {
             if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is not valid" })
