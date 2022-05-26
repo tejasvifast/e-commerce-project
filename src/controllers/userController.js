@@ -68,9 +68,11 @@ const createUser = async function (req, res) {
             if(city.toLowerCase()!==cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
         }
 
+        if(files && files.length!=0){
+            let imageUrl = await uploadFile(files[0])
+            if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+        }
 
-        let imageUrl = await uploadFile(files[0])
-        if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
         requestBody.address = address

@@ -8,10 +8,11 @@ const isValidPrice = function (price) {
   }
 }
 
-const isValid = function (value) {
-  if (typeof value === 'undefined' || value === null) return false
-  if (typeof value === 'string' && value.trim().length === 0) return false
-  return true;
+const isValid = (value) => {
+    if (typeof value == 'undefined' || value == null) return false
+    if (typeof value == 'string' && value.trim().length == 0) return false
+    if (typeof value == 'number' && value.toString().trim().length == 0) return false
+    return true
 }
 
 const isValidObjectType = (value) => {
@@ -30,7 +31,7 @@ const isValidBody = (object) => {
   }
 };
 
-const validSize = (Size) => {
+const isValidSize = (Size) => {
   let correctSize = ["S", "XS", "M", "X", "L", "XXL", "XL"]
   return (correctSize.includes(Size))
 }
@@ -80,4 +81,4 @@ const isValidObjectId = (objectId) => {
   return mongoose.Types.ObjectId.isValid(objectId)
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, validSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum };
+module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum };
