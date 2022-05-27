@@ -22,14 +22,15 @@ const  isValidBody = (object) => {
   }
 };
 
-const validTitle = (Title) => {
-  let correctTitle = ["Mr", "Mrs", "Miss"];
-  if (correctTitle.includes(Title)) {
+const validSize = (size) => {
+  let correctSize = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+  if (correctSize.includes("S")) {
     return false
   } else {
     return true;
   };
 };
+
 
 const validString = (String) => {
   if (/\d/.test(String)) {
@@ -83,4 +84,10 @@ const validISBN = function (value) {
   return true
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, validTitle, validString, validMobileNum, validEmail, validPwd, isValidObjectId, validDate, validISBN };
+let isValidEnum= function(value){
+  let availableSizes=["S", "XS","M","X", "L","XXL", "XL"];
+// return  enums.indexOf(value)!== -1;
+return  availableSizes.includes(value)
+}
+
+module.exports = { isValid, isValidEnum, isValidObjectType, isValidBody, validSize, validString, validMobileNum, validEmail, validPwd, isValidObjectId, validDate, validISBN };

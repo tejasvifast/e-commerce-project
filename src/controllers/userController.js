@@ -7,8 +7,18 @@ const { isValid, isValidObjectType, isValidBody, validString, validMobileNum, va
 const createUser = async function (req, res) {
     try {
         let requestBody = req.body
-
-        if (!isValidBody(requestBody)) return res.status(400).send({ status: false, msg: "provide details" })
+        let files = req.files
+       
+        // if(files!=undefined){ 
+        if (! isValidBody(requestBody)) return res.status(400).send({ status: false, msg: "provide details" })
+   //}
+   if(files && files.length>0){ 
+    let imageUrl = await uploadFile(files[0])
+           requestBody.profileImage = imageUrl}
+           else if(files && files.length==0){
+            return res.status(400).send({ status: false, message: "profile image is mandatory" })
+           }
+       
 
         const { fname, lname, email, phone, password, address } = requestBody
         if (! isValid(fname)) return res.status(400).send({ status: false, message: "fname is mandatory" })
@@ -19,44 +29,52 @@ const createUser = async function (req, res) {
 
         if (! isValid(email)) return res.status(400).send({ status: false, message: "email is mandatory" })
         if(validEmail(email)) return res.status(400).send({ status: false, message: "email not valid" })
-        let uniqueEmail = await userModel.findOne({email:email})
-        if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
+        // let uniqueEmail = await userModel.findOne({email:email})
+        // if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
 
         if (! isValid(phone)) return res.status(400).send({ status: false, message: "phone is mandatory" })
         if(validMobileNum(phone)) return res.status(400).send({ status: false, message: "phone not valid" })
-        let uniquephone = await userModel.findOne({phone:phone})
-        if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
+        // let uniquephone = await userModel.findOne({phone:phone})
+        // if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
 
 
         if (! isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
-        // console.log(typeof (address));//in string
-        // address= JSON.parse(address) 
-        // console.log(address);
-        // if (!isValid(address)) return res.status(400).send({ status: false, message: "address is mandatory" })
+        
+        let address1= JSON.parse(address) 
+        console.log(address1);
+        if (!isValid(address)) return res.status(400).send({ status: false, message: "address is mandatory" })
 
+        //if(! isValid(address1.shipping)) return res.status(400).send({ status: false, message: "shipping address is mandatory" })
 
-        // if(! isValid(address1.shipping)) return res.status(400).send({ status: false, message: "shipping address is mandatory" })
-        // if(! isValid(address1.shipping.street)) return res.status(400).send({ status: false, message: "shipping street is mandatory" })
-        // if(! isValid(address1.shipping.city)) return res.status(400).send({ status: false, message: "shipping city is mandatory" })
-        // if(! isValid(address1.shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode is mandatory" })
+        if(! isValid(address1.shipping.street)) return res.status(400).send({ status: false, message: "shipping street is mandatory" })
+        if(validString(address1.shipping.street)) return res.status(201).send({ status: false, message: "street should not contain number" })
 
+        if(! isValid(address1.shipping.city)) return res.status(400).send({ status: false, message: "shipping city is mandatory" })
+        if(validString(address1.shipping.city)) return res.status(201).send({ status: false, message: "city should not contain number" })
 
-        // if(! isValid(address1.billing)) return res.status(400).send({ status: false, message: "billing address is mandatory" })
-        // if(! isValid(address1.billing.street)) return res.status(400).send({ status: false, message: "billing street is mandatory" })
-        // if(! isValid(address1.billing.city)) return res.status(400).send({ status: false, message: "billing city is mandatory" })
-        // if(! isValid(address1.billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode is mandatory" })
-
+        if(! isValid(address1.shipping.pincode)) return res.status(400).send({ status: false, message: "shipping pincode is mandatory" })
 
 
 
-        let files = req.files
-        let imageUrl = await uploadFile(files[0])
+        if(! isValid(address1.billing)) return res.status(400).send({ status: false, message: "billing address is mandatory" })
+
+        if(! isValid(address1.billing.street)) return res.status(400).send({ status: false, message: "billing street is mandatory" })
+        if(validString(address1.billing.street)) return res.status(201).send({ status: false, message: "street should not contain number" })
+
+        if(! isValid(address1.billing.city)) return res.status(400).send({ status: false, message: "billing city is mandatory" })
+        if(validString(address1.billing.city)) return res.status(201).send({ status: false, message: "city should not contain number" })
+
+        if(! isValid(address1.billing.pincode)) return res.status(400).send({ status: false, message: "billing pincode is mandatory" })
+
+       
+
+
+
+       
         //if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
-        requestBody.address = JSON.parse(address)
-        requestBody.profileImage = imageUrl
-        //if(! profileImage) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+       
         let userCreated = await userModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: userCreated })
     }
@@ -115,7 +133,7 @@ const updateUserDetails = async function (req, res) {
         let findUserId = await userModel.findById({ _id: userId })
         if (!findUserId) return res.status(404).send({ status: false, msg: "user not found" })
 
-        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })
+        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })///
 
         if (formData) {
             let updateProfileImage = await uploadFile(formData[0])

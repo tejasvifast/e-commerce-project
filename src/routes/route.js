@@ -11,13 +11,13 @@ router.put('/user/:userId/profile',updateUserDetails )
 
 //********************************************************************************************************************
 
-const { createProduct, getProduct, getProductById,updateProductDetals, deleteProductById } = require('../controllers/productController')
+const { createProduct, getProduct, getProductById,updateProductDetails, deleteProductById } = require('../controllers/productController')
 
 
 router.post('/products', createProduct)
 router.get('/products', getProduct)
 router.get('/products/:productId', getProductById)
-router.put('/products/:productId', updateProductDetals)
+router.put('/products/:productId', updateProductDetails)
 router.delete('/products/:productId', deleteProductById)
 
 //*********************************************************************************************************************** */
