@@ -15,7 +15,6 @@ let uploadFile = async (file) => {
             Bucket: "classroom-training-bucket",
             Key: "apocalypse/" + new Date().toISOString() + file.originalname ,
             Body: file.buffer
-
         }
         s3.upload(uploadParams, function (err, data) {
             if (err) {

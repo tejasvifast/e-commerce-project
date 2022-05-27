@@ -18,7 +18,8 @@
   },
   "homepage": "https://github.com/Pragyatiwarii123/projectXYZ#readme",
   "dependencies": {
-    "aws-sdk": "^2.1140.0",
+    "aws-sdk": "^2.1145.0",
+    "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
     "connect-multiparty": "^2.2.0",
