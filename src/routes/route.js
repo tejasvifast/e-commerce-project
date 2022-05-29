@@ -22,10 +22,17 @@ router.delete('/products/:productId', deleteProductById)
 
 //*********************************************************************************************************************** */
 
-const { addToCart } = require('../controllers/cartController')
+const { addToCart, updateCart, getCart, deleteCart } = require('../controllers/cartController')
+
 
 
 router.post('/users/:userId/cart', addToCart)
+router.put('/users/:userId/cart', updateCart)
+router.get('/users/:userId/cart', getCart)
+router.delete('/users/:userId/cart', deleteCart)
+
+
+
 
 
 

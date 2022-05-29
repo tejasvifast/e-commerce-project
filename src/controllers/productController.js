@@ -55,27 +55,32 @@ const createProduct = async function (req, res) {
 const getProduct = async function (req, res) {
     try {
         const requestQuery = req.query
-        const { size, name, priceGreaterThan, priceLessThan } = requestQuery
+        const { size, name, priceGreaterThan, priceLessThan, priceSort } = requestQuery
         const filterQuery = { isDeleted: false }
 
         if (Object.keys(requestQuery).length > 0) {
             if (size) {
                 let size1 = size.split(",").map(x => x.trim())
                 if (size1.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be among  S,XS,M,X,L,XXL,XL" })
-                filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) } 
+                filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) }
             }
-            if (name) { 
+
+            if (name) {
+                let findTitle = await productModel.find()
+                let fTitle = findTitle.map(x => x.title).filter(x => x.includes(name))
+
+                if (fTitle.length == 0) { filterQuery.title = name }
                 if (!isValidString(name)) return res.status(400).send({ status: false, message: "fname should not contain number" })
-                filterQuery.title = name.trim() 
+                filterQuery.title = { $in: fTitle }
             }
             if (priceGreaterThan && priceLessThan) { filterQuery.price = { $gte: priceGreaterThan, $lte: priceLessThan } }
             if (priceGreaterThan) { filterQuery.price = { $gte: priceGreaterThan } }
             if (priceLessThan) { filterQuery.price = { $lte: priceLessThan } }
         }
-
-        const findProducts = await productModel.find(filterQuery).sort({ price: 1 })
+    
+        const findProducts = await productModel.find(filterQuery).sort({ price: priceSort })
         if (!findProducts) return res.status(404).send({ status: false, message: "products not found or may be deleted" })
-        return res.status(200).send({ status: true,count: findProducts.length, message: "products details", data: findProducts })
+        return res.status(200).send({ status: true, count: findProducts.length, message: "products details", data: findProducts })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
@@ -134,7 +139,7 @@ const updateProductDetails = async function (req, res) {
         if (availableSizes) {
             availableSizes = availableSizes.split(",").map(x => x.trim())
             if (availableSizes.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be Among  S,XS,M,X,L,XXL,XL" })
-            updateData.availableSizes = availableSizes 
+            updateData.availableSizes = availableSizes
         }
         if (installments) {
             if (isValidString(installments)) return res.status(400).send({ status: false, message: "installments Should be whole Number Only" })
