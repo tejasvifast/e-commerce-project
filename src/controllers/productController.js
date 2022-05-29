@@ -9,6 +9,7 @@ const createProduct = async function (req, res) {
     try {
         let requestBody = req.body
         let files = req.files
+        console.log(files)
         let { title, description, price, currencyId, style, availableSizes, installments } = requestBody
 
         if (!title) return res.status(400).send({ status: false, message: "title is mandatory" })
@@ -41,6 +42,8 @@ const createProduct = async function (req, res) {
         if (!(files && files.length > 0)) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         let imageUrl = await uploadFile(files[0])
         requestBody.productImage = imageUrl
+
+        console.log(files)
 
         let productCreated = await productModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: productCreated })
