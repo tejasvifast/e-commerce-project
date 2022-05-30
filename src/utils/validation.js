@@ -44,6 +44,11 @@ const isValidString = (String) => {
   }
 }
 
+const isValidNum = (Num) => {
+  let correctNum = [0,1]
+  return (correctNum.includes(Num))
+}
+
 
 
 const isValidMobileNum = (Mobile) => {
@@ -75,4 +80,4 @@ const isValidObjectId = (objectId) => {
   return mongoose.Types.ObjectId.isValid(objectId)
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice };
+module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum };
