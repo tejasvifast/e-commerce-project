@@ -47,22 +47,22 @@ const createCart = async function (req, res) {
 
 const updateCart = async function (req, res) {
     try {
-        let userId = req.params.userId
-        let productId = req.body.productId
-        let cartId = req.body.cartId
-        let removeProduct = req.body.removeProduct
-        const findCart = await cartModel.findById({ userId: userId })
-        const items = findCart.items
+        const userId = req.params.userId
+        const { cartId,productId ,removeProduct }= req.body
+
+        const findCart = await cartModel.findOne({ userId: userId })
+        if(!findCart) return res.status(404).send({status: false, messsage: "Cart not found"})
         const findProduct = await productModel.findOne({ _id: productId })
-        let removedProductPrice = findProduct.price
+        let reducePrice = findProduct.price
+
         if (removeProduct == 0) {
-            let cart = await cartModel.findOne({ "items.productId": productId, userId: userId })
-            let quantity = cart.items[0].quantity
-            let deleteProduct = await cartModel.findOneAndUpdate({ "items.productId": productId }, { $pull: { items: { productId: productId } }, $inc: { totalItems: -1, totalPrice: -removedProductPrice/*quantity*/ } }, { new: true })
+            const cart = await cartModel.findOne({ "items.productId": productId, userId: userId })
+            const quantity = cart.items.filter(x=>x.productId.toString()===productId)[0].quantity
+            const deleteProduct = await cartModel.findOneAndUpdate({ "items.productId": productId , userId: userId}, { $pull: { items: { productId: productId } }, $inc: { totalItems: -1, totalPrice: -reducePrice*quantity } }, { new: true })
             return res.status(200).send({ status: true, messsage: "item removed successfully", data: deleteProduct })
         }
         if (removeProduct == 1) {
-            let reduceProduct = await cartModel.findOneAndUpdate({ "items.productId": productId }, { $inc: { /*"items.$.quantity":/* -items.quantity,*/  totalPrice: -removedProductPrice } }, { new: true })
+            let reduceProduct = await cartModel.findOneAndUpdate({ "items.productId": productId , userId: userId}, { $inc: { "items.$.quantity": -1,  totalPrice: -reducePrice } }, { new: true })
             return res.status(200).send({ status: true, messsage: "product removed successfully", data: reduceProduct })
         }
     }
@@ -102,10 +102,6 @@ const deleteCart = async function (req, res) {
         return res.status(500).send({ status: false, error: err.message })
     }
 }
-
-
-
-
 
 
 module.exports = { createCart, updateCart, getCart, deleteCart }
