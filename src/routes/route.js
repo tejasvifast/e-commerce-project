@@ -11,21 +11,28 @@ router.put('/user/:userId/profile',updateUserDetails )
 
 //********************************************************************************************************************
 
-const { createProduct, getProduct, getProductById,updateProductDetals, deleteProductById } = require('../controllers/productController')
+const { createProduct, getProduct, getProductById,updateProductDetails, deleteProductById } = require('../controllers/productController')
 
 
 router.post('/products', createProduct)
 router.get('/products', getProduct)
 router.get('/products/:productId', getProductById)
-router.put('/products/:productId', updateProductDetals)
+router.put('/products/:productId', updateProductDetails)
 router.delete('/products/:productId', deleteProductById)
 
 //*********************************************************************************************************************** */
 
-const { addToCart } = require('../controllers/cartController')
+const { createCart, updateCart, getCart, deleteCart } = require('../controllers/cartController')
 
 
-router.post('/users/:userId/cart', addToCart)
+
+router.post('/users/:userId/cart', createCart)
+router.put('/users/:userId/cart', updateCart)
+router.get('/users/:userId/cart', getCart)
+router.delete('/users/:userId/cart', deleteCart)
+
+
+
 
 
 

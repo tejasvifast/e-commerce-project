@@ -44,13 +44,7 @@ const isValidString = (String) => {
   }
 }
 
-const isValidNum = (number) => {
-  if (/^\d+$/.test(number)) {
-    return true
-  } else {
-    return false;
-  };
-};
+
 
 const isValidMobileNum = (Mobile) => {
   if (/^[6-9]\d{9}$/.test(Mobile)) {
@@ -81,4 +75,4 @@ const isValidObjectId = (objectId) => {
   return mongoose.Types.ObjectId.isValid(objectId)
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum };
+module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice };

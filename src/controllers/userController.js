@@ -30,6 +30,8 @@ const createUser = async function (req, res) {
 
 
         if (!isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
+        const bcryptPassword = await bcrypt.hash(password, 10)
+        requestBody.password = bcryptPassword
 
         if (!address) return res.status(400).send({ status: false, message: "address is mandatory" })
         address = JSON.parse(address)
@@ -47,9 +49,9 @@ const createUser = async function (req, res) {
                 url: `https://api.postalpincode.in/pincode/${pincode}`
             }
             let result = await axios(options)
-            if(!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
+            if (!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
             const cityByPincode = result.data[0].PostOffice[0].District
-            if(city.toLowerCase()!==cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
+            if (city.toLowerCase() !== cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
         }
 
         if (!billing) return res.status(400).send({ status: false, message: "billing address is mandatory" })
@@ -63,18 +65,17 @@ const createUser = async function (req, res) {
                 url: `https://api.postalpincode.in/pincode/${pincode}`
             }
             let result = await axios(options)
-            if(!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
+            if (!result.data[0].PostOffice) return res.status(400).send({ status: false, message: "No city Found with provided pincode" })
             const cityByPincode = result.data[0].PostOffice[0].District
-            if(city.toLowerCase()!==cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
+            if (city.toLowerCase() !== cityByPincode.toLowerCase()) return res.status(400).send({ status: false, message: "Provided Pincode city is different" })
         }
 
-        if(files && files.length!=0){
+        if (files && files.length != 0) {
             let imageUrl = await uploadFile(files[0])
-            if(! imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+            if (!imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
         }
 
-        const bcryptPassword = await bcrypt.hash(password, 10)
-        requestBody.password = bcryptPassword
+
         requestBody.address = address
         requestBody.profileImage = imageUrl
         let userCreated = await userModel.create(requestBody)
@@ -134,7 +135,7 @@ const updateUserDetails = async function (req, res) {
         let findUserId = await userModel.findById({ _id: userId })
         if (!findUserId) return res.status(404).send({ status: false, msg: "user not found" })
 
-        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })
+        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })///
 
         if (formData) {
             let updateProfileImage = await uploadFile(formData[0])

@@ -1,7 +1,7 @@
 
 const productModel = require('../models/productModel')
 const { uploadFile } = require('../utils/aws')
-const { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum } = require('../utils/validation')
+const { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice } = require('../utils/validation')
 
 //******************************************CREATE PRODUCT*************************************************************/
 
@@ -58,20 +58,32 @@ const createProduct = async function (req, res) {
 const getProduct = async function (req, res) {
     try {
         const requestQuery = req.query
-        const { size, name, priceGreaterThan, priceLessThan } = requestQuery
+        const { size, name, priceGreaterThan, priceLessThan, priceSort } = requestQuery
         const filterQuery = { isDeleted: false }
 
         if (Object.keys(requestQuery).length > 0) {
-            if (size) { filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) } }// {$in:["X","S"]}/////////////////////////////
-            if (name) { filterQuery.title = name.trim() }
+            if (size) {
+                let size1 = size.split(",").map(x => x.trim())
+                if (size1.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be among  S,XS,M,X,L,XXL,XL" })
+                filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim()) }
+            }
+
+            if (name) {
+                let findTitle = await productModel.find()
+                let fTitle = findTitle.map(x => x.title).filter(x => x.includes(name))
+
+                if (fTitle.length == 0) { filterQuery.title = name }
+                if (!isValidString(name)) return res.status(400).send({ status: false, message: "fname should not contain number" })
+                filterQuery.title = { $in: fTitle }
+            }
             if (priceGreaterThan && priceLessThan) { filterQuery.price = { $gte: priceGreaterThan, $lte: priceLessThan } }
             if (priceGreaterThan) { filterQuery.price = { $gte: priceGreaterThan } }
             if (priceLessThan) { filterQuery.price = { $lte: priceLessThan } }
         }
-
-        const findProducts = await productModel.find(filterQuery).sort({ price: 1 })
+    
+        const findProducts = await productModel.find(filterQuery).sort({ price: priceSort })
         if (!findProducts) return res.status(404).send({ status: false, message: "products not found or may be deleted" })
-        return res.status(200).send({ status: true, message: "products details", data: findProducts })
+        return res.status(200).send({ status: true, count: findProducts.length, message: "products details", data: findProducts })
     }
     catch (err) {
         return res.status(500).send({ status: false, error: err.message })
@@ -93,30 +105,32 @@ const getProductById = async function (req, res) {
 }
 
 ///**************************************************UPDATE PRODUCTS******************************************************************************** */
-const updateProductDetals = async function (req, res) {
+const updateProductDetails = async function (req, res) {
     try {
         const productId = req.params.productId
         const image = req.files
         const updateData = req.body
 
-        let { title, description, price, currencyId, style, availableSizes, installments } = updateData
+        let { title, description, price, style, availableSizes, installments } = updateData
 
         if (!isValidObjectId(productId)) return res.status(400).send({ status: false, msg: "invalid user Id" })
+
         let findProductId = await productModel.findById({ _id: productId, isDeleted: false })
         if (!findProductId) return res.status(404).send({ status: false, msg: "Product not found" })
 
         if ((Object.keys(updateData).length == 0)) return res.status(400).send({ status: false, msg: "please provide data to update" })
 
-        if (image&&image.length>0) {
+        if (image && image.length > 0) {
             let updateProductImage = await uploadFile(image[0])
             updateData.productImage = updateProductImage
         }
         if (title) {
             if (!isValid(title)) return res.status(400).send({ status: false, message: "title Should be Valid" })
+            if (!isValidString(title)) return res.status(400).send({ status: false, message: "title should not contain number" })
             if (await productModel.findOne({ title })) return res.status(400).send({ status: false, message: "title Should be Unique" })
         }
         if (description) {
-            if (!isValid(description)) return res.status(400).send({ status: false, message: "title Should be Valid" })
+            if (!isValid(description)) return res.status(400).send({ status: false, message: "description Should be Valid" })
         }
         if (price) {
             if (!isValidPrice(price)) return res.status(400).send({ status: false, message: "price Should be Valid" })
@@ -128,10 +142,10 @@ const updateProductDetals = async function (req, res) {
         if (availableSizes) {
             availableSizes = availableSizes.split(",").map(x => x.trim())
             if (availableSizes.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be Among  S,XS,M,X,L,XXL,XL" })
-            updateData.availableSizes = availableSizes 
+            updateData.availableSizes = availableSizes
         }
         if (installments) {
-            if (!isValidNum(installments)) return res.status(400).send({ status: false, message: "installments Should be whole Number Only" })
+            if (isValidString(installments)) return res.status(400).send({ status: false, message: "installments Should be whole Number Only" })
         }
 
         const updateDetails = await productModel.findByIdAndUpdate({ _id: productId }, updateData, { new: true })
@@ -142,34 +156,6 @@ const updateProductDetals = async function (req, res) {
     }
 }
 
-// const updateProductDetals = async function (req, res) {
-//     try {
-//         const productId = req.params.productId
-//         const formData = req.files
-//         let imageUrl = await uploadFile(formData[0])
-//         const data = req.body
-//         let filterQuery = { isDeleted: false }
-//         const { title, description, price, currencyId, currencyFormat, isFreeShipping, productImage, style, availableSizes, installments } = data //destructuring
-//         if (title) { filterQuery.title = title }
-//         if (description) { filterQuery.description = description }
-//         if (price) { filterQuery.price = price }
-//         if (currencyId) { filterQuery.currencyId = currencyId }
-//         if (currencyFormat) { filterQuery.currencyFormat = currencyFormat }
-//         if (isFreeShipping) { filterQuery.isFreeShipping = isFreeShipping }
-//         if (productImage) { filterQuery.productImage = imageUrl }
-//         if (style) { filterQuery.style = style }
-//         if (availableSizes) { filterQuery.availableSizes = availableSizes }
-//         if (installments) { filterQuery.installments = installments }
-
-//         const updateDetails = await productModel.findByIdAndUpdate({ _id: productId }, filterQuery, { new: true })
-//         return res.status(200).send({ status: true, message: "product details updated successfully", data: updateDetails })
-
-
-//     }
-//     catch (err) {
-//         return res.status(500).send({ status: false, error: err.message })
-//     }
-// }
 
 //****************************************************DELETE BY ID************************************************************************************ */
 
@@ -187,4 +173,4 @@ const deleteProductById = async function (req, res) {
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------
 
-module.exports = { createProduct, getProduct, getProductById, updateProductDetals, deleteProductById }
+module.exports = { createProduct, getProduct, getProductById, updateProductDetails, deleteProductById }
