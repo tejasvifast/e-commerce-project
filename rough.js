@@ -10,3 +10,8 @@ for(let i=0;i<s.length;i++){
 console.log(count)
 
 // [int(s[i:j+1]) for i in range(l) for j in range(i,l)]
+
+            
+//let reduceProduct = await cartModel.findOneAndUpdate({ "items.productId": productId , userId: userId}, { $inc: { "items.$.quantity": -1,  totalPrice: -reducePrice } }, { new: true })
+
+console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".length)
