@@ -62,6 +62,10 @@ const updateCart = async function (req, res) {
             return res.status(200).send({ status: true, messsage: "item removed successfully", data: deleteProduct })
         }
         if (removeProduct == 1) {
+            const cart = await cartModel.findOne({ "items.productId": productId, userId: userId })
+            const quantity = cart.items.filter(x=>x.productId.toString()===productId)[0].quantity
+            console.log(quantity)
+            // let reduceProduct = await cartModel.findOneAndUpdate({$cond:{ if:{ $and:[{"items.productId": productId },{ userId: userId }] }}, then:{  $inc: { "items.$.quantity": -1,  totalPrice: -reducePrice } }, else:{ $pull: { items: { productId: productId } }, $inc: { totalItems: -1, totalPrice: -reducePrice*quantity }}}, { new: true })
             let reduceProduct = await cartModel.findOneAndUpdate({ "items.productId": productId , userId: userId}, { $inc: { "items.$.quantity": -1,  totalPrice: -reducePrice } }, { new: true })
             return res.status(200).send({ status: true, messsage: "product removed successfully", data: reduceProduct })
         }
