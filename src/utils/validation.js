@@ -36,6 +36,12 @@ const isValidSize = (Size) => {
   return (correctSize.includes(Size))
 }
 
+const isValidStatus = (status) => {
+  let correctStatus = ['pending', 'completed', 'cancled']
+  return (correctStatus.includes(status))
+}
+
+
 const isValidString = (String) => {
   if (/\d/.test(String)) {
     return false
@@ -80,4 +86,4 @@ const isValidObjectId = (objectId) => {
   return mongoose.Types.ObjectId.isValid(objectId)
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum };
+module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum, isValidStatus };

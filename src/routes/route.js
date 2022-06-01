@@ -35,9 +35,11 @@ router.delete('/users/:userId/cart', deleteCart)///users/:userId/orders
 
 //*********************************************************************************************************************** */
 
-const { createOrder} = require('../controllers/orderController')
+const { createOrder, updateOrder} = require('../controllers/orderController')
 
 router.post('/users/:userId/orders', createOrder)
+router.put('/users/:userId/orders', updateOrder)
+
 
 
 
