@@ -124,29 +124,33 @@ const updateProductDetails = async function (req, res) {
             let updateProductImage = await uploadFile(image[0])
             updateData.productImage = updateProductImage
         }
-        if (title) {
+ 
+        if (typeof title!="undefined") {
             if (!isValid(title)) return res.status(400).send({ status: false, message: "title Should be Valid" })
             if (!isValidString(title)) return res.status(400).send({ status: false, message: "title should not contain number" })
             if (await productModel.findOne({ title })) return res.status(400).send({ status: false, message: "title Should be Unique" })
         }
-        if (description) {
+        if (description!=undefined) {
             if (!isValid(description)) return res.status(400).send({ status: false, message: "description Should be Valid" })
         }
-        if (price) {
+        if (price!=undefined) {
             if (!isValidPrice(price)) return res.status(400).send({ status: false, message: "price Should be Valid" })
-        }
-        if (style) {
+        } 
+
+        if (style!=undefined) { 
             if (!isValid(style)) return res.status(400).send({ status: false, message: "style Should be Valid" })
-            if (!isValidString(style)) return res.status(400).send({ status: false, message: "style Should Not Contain Numbers" })
+            if (!isValidString(style)) return res.status(400).send({ status: false, message: "style Should Not Contain Numbers" })    
         }
-        if (availableSizes) {
+        if (availableSizes!=undefined) {
+            if (!isValid(availableSizes)) return res.status(400).send({ status: false, message: "availableSizes Should be Valid" })
             availableSizes = availableSizes.split(",").map(x => x.trim())
-            if (availableSizes.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be Among  S,XS,M,X,L,XXL,XL" })
-            updateData.availableSizes = availableSizes
+            if (availableSizes.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be Among  S,XS,M,X,L,XXL,XL" })   
         }
-        if (installments) {
+        if (installments!=undefined) {
             if (isValidString(installments)) return res.status(400).send({ status: false, message: "installments Should be whole Number Only" })
         }
+
+        console.log(updateData)
 
         const updateDetails = await productModel.findByIdAndUpdate({ _id: productId }, updateData, { new: true })
         return res.status(200).send({ status: true, message: "User profile updated successfully", data: updateDetails })
