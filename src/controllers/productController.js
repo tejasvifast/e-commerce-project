@@ -150,8 +150,6 @@ const updateProductDetails = async function (req, res) {
             if (isValidString(installments)) return res.status(400).send({ status: false, message: "installments Should be whole Number Only" })
         }
 
-        console.log(updateData)
-
         const updateDetails = await productModel.findByIdAndUpdate({ _id: productId }, updateData, { new: true })
         return res.status(200).send({ status: true, message: "User profile updated successfully", data: updateDetails })
     }
