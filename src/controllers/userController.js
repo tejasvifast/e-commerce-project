@@ -72,12 +72,14 @@ const createUser = async function (req, res) {
 
         if (files && files.length != 0) {
             let imageUrl = await uploadFile(files[0])
-            if (!imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+            console.log(imageUrl,"hello")
+             if (!imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
+             requestBody.profileImage = imageUrl
         }
 
-
+        // console.log(imageUrl)
         requestBody.address = address
-        requestBody.profileImage = imageUrl
+        
         let userCreated = await userModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: userCreated })
     }
@@ -97,7 +99,7 @@ const loginUser = async function (req, res) {
         let checkValidPass = await bcrypt.compare(password, userLoggedIn.password)
         if (!checkValidPass) return res.status(400).send({ status: false, message: "incorrect password" })
         let token = jwt.sign(
-            { userId: userLoggedIn._id }, "e-commerceWebsite", { expiresIn: '1d' }
+            { userId: userLoggedIn._id }, "e-commerceWebsite", { expiresIn: '60s' }
         )
         return res.status(200).send({ status: true, message: "User login successfull", data: token })
     }
