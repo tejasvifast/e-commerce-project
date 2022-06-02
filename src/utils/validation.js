@@ -74,11 +74,11 @@ const isValidEmail = (Email) => {
 
 };
 
-const validPwd = (Password) => {
+const isValidPwd = (Password) => {
   if (/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,15}$/.test(Password)) {
-    return false
+    return true
   } else {
-    return true;
+    return false;
   }
 };
 
@@ -86,4 +86,10 @@ const isValidObjectId = (objectId) => {
   return mongoose.Types.ObjectId.isValid(objectId)
 };
 
-module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum, isValidStatus };
+
+//==File Validation
+const isImageFile = function(files){
+  let imageRegex = /.*\.(jpeg|jpg|png)$/;
+  return imageRegex.test(files)
+}
+module.exports = { isValid, isValidObjectType, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, isValidPwd, isValidObjectId, isValidPrice, isValidNum, isValidStatus ,isImageFile };

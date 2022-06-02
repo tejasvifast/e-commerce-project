@@ -1,7 +1,7 @@
 const cartModel = require('../models/cartModel')
 const productModel = require('../models/productModel')
 const userModel = require('../models/userModel')
-const { isValid, isValidObjectId, isValidString, isValidNum } = require('../utils/validation')
+const { isValid, isValidObjectId, isValidNum } = require('../utils/validation')
 
 //*************************************************************CREATE PRODUCT********************************************************************************** */
 
@@ -34,6 +34,7 @@ const createCart = async function (req, res) {
                 return res.status(200).send({ status: true, message: "items added successfully", data: updatedCart })
             }
             else {
+               
 
                 let updatedCart = await cartModel.findOneAndUpdate({ userId: userId }, { $push: { items: productDetails }, $inc: { totalItems: 1, totalPrice: productPrice } }, { new: true })
                 return res.status(200).send({ status: true, message: "items added successfully", data: updatedCart })
@@ -67,7 +68,7 @@ const updateCart = async function (req, res) {
 
         if(!cartId) return res.status(400).send({ status: false, message: "Provide cartId " })
         if (!isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "invalid cart Id.." })
-        const cart1 = await cartModel.findOne({ $or: [{ _id: cartId }, { userId: userId }] })
+        const cart1 = await cartModel.findOne({ $or: [{ _id: cartId }/*, { userId: userId }*/] })
         if (!cart1) return res.status(404).send({ status: false, message: "cart does not exist.." })
         if (cart1.items.length == 0) return res.status(404).send({ status: false, message: "No Product Present In the Cart" })
 

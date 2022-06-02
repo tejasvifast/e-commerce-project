@@ -8,7 +8,7 @@ const {createUser, loginUser, getUserDetails, updateUserDetails} = require('../c
 
 router.post('/register',createUser)
 router.post('/login', loginUser)
-router.get('/user/:userId/profile', authentication, getUserDetails)
+router.get('/user/:userId/profile', authentication, authorization, getUserDetails)
 router.put('/user/:userId/profile',authentication, authorization, updateUserDetails )
 
 //********************************************************************************************************************
@@ -28,17 +28,17 @@ const { createCart, updateCart, getCart, deleteCart } = require('../controllers/
 
 
 
-router.post('/users/:userId/cart', createCart)
-router.put('/users/:userId/cart', updateCart)
-router.get('/users/:userId/cart', getCart)
-router.delete('/users/:userId/cart', deleteCart)///users/:userId/orders
+router.post('/users/:userId/cart', authentication, createCart)
+router.put('/users/:userId/cart', authentication, updateCart)
+router.get('/users/:userId/cart', authentication, authorization, getCart)
+router.delete('/users/:userId/cart', authentication, authorization, deleteCart)
 
 //*********************************************************************************************************************** */
 
 const { createOrder, updateOrder} = require('../controllers/orderController')
 
-router.post('/users/:userId/orders', createOrder)
-router.put('/users/:userId/orders', updateOrder)
+router.post('/users/:userId/orders',authentication, authorization, createOrder)
+router.put('/users/:userId/orders',authentication, authorization, updateOrder)
 
 
 
