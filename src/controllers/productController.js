@@ -46,8 +46,6 @@ const createProduct = async function (req, res) {
         let imageUrl = await uploadFile(files[0])
         requestBody.productImage = imageUrl
 
-        console.log(files)
-
         let productCreated = await productModel.create(requestBody)
         return res.status(201).send({ status: true, message: "User created successfully", data: productCreated })
     }
@@ -64,11 +62,11 @@ const getProduct = async function (req, res) {
         const { size, name, priceGreaterThan, priceLessThan, priceSort } = requestQuery
         const filterQuery = { isDeleted: false }
 
-        if (Object.keys(requestQuery).length > 0) {
+        if (Object.keys(requestQuery).length > 0) { 
             if (size) {
                 let size1 = size.split(",").map(x => x.trim().toUpperCase())
                 if (size1.map(x => isValidSize(x)).filter(x => x === false).length !== 0) return res.status(400).send({ status: false, message: "Size Should be among  S,XS,M,X,L,XXL,XL" })
-                filterQuery.availableSizes = { $in: size.split(",").map(x => x.trim().toUpperCase()) }
+                filterQuery.availableSizes = { $in: size1 }
             }
 
             if (name) {
@@ -76,12 +74,11 @@ const getProduct = async function (req, res) {
                 let fTitle = findTitle.map(x => x.title).filter(x => x.includes(name))
 
                 if (fTitle.length == 0) { filterQuery.title = name }
-                if (!isValidString(name)) return res.status(400).send({ status: false, message: "fname should not contain number" })
                 filterQuery.title = { $in: fTitle }
             }
-            if (priceGreaterThan && priceLessThan) { filterQuery.price = { $gte: priceGreaterThan, $lte: priceLessThan } }
-            if (priceGreaterThan && !priceLessThan) { filterQuery.price = { $gte: priceGreaterThan } }
-            if (priceLessThan && !priceGreaterThan) { filterQuery.price = { $lte: priceLessThan } }
+            if (priceGreaterThan && priceLessThan) { filterQuery.price = { $gt: priceGreaterThan, $lt: priceLessThan } }
+            if (priceGreaterThan && !priceLessThan) { filterQuery.price = { $gt: priceGreaterThan } }
+            if (priceLessThan && !priceGreaterThan) { filterQuery.price = { $lt: priceLessThan } }
         }
 
         const findProducts = await productModel.find(filterQuery).sort({ price: priceSort })
