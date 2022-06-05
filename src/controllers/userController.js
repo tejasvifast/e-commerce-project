@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const axios = require("axios");
 const { uploadFile } = require('../utils/aws')
-const { isValid, isValidObjectType, isValidBody, validSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice, isValidNum } = require('../utils/validation')
+const { isValid, isValidBody, validSize, isValidString, isValidMobileNum, isValidEmail, isValidPwd, isValidObjectId, isValidPrice, isValidNum } = require('../utils/validation')
 
 const createUser = async function (req, res) {
     try {
@@ -20,16 +20,18 @@ const createUser = async function (req, res) {
 
         if (!isValid(email)) return res.status(400).send({ status: false, message: "email is mandatory" })
         if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "email not valid" })
-        // let uniqueEmail = await userModel.findOne({email:email})
-        // if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
+        let uniqueEmail = await userModel.findOne({email:email})
+        if(uniqueEmail) return res.status(400).send({ status: false, message: "email Id already exist" })
 
         if (!isValid(phone)) return res.status(400).send({ status: false, message: "phone is mandatory" })
         if (!isValidMobileNum(phone)) return res.status(400).send({ status: false, message: "phone not valid" })
-        // let uniquephone = await userModel.findOne({phone:phone})
-        // if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
+        let uniquephone = await userModel.findOne({phone:phone})
+        if(uniquephone) return res.status(400).send({ status: false, message: "phone no. already exist" })
 
 
         if (!isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
+        if (!isValidPwd(password)) return res.status(400).send({ status: false, message: "password not valid..password length should be min 8 max 15 charavters " })
+
         const bcryptPassword = await bcrypt.hash(password, 10)
         requestBody.password = bcryptPassword
 
@@ -72,12 +74,10 @@ const createUser = async function (req, res) {
 
         if (files && files.length != 0) {
             let imageUrl = await uploadFile(files[0])
-            console.log(imageUrl,"hello")
              if (!imageUrl) return res.status(400).send({ status: false, message: "profile image is mandatory" })
              requestBody.profileImage = imageUrl
         }
 
-        // console.log(imageUrl)
         requestBody.address = address
         
         let userCreated = await userModel.create(requestBody)
@@ -94,12 +94,18 @@ const loginUser = async function (req, res) {
     try {
         let requestBody = req.body
         const { password, email } = requestBody
+        if (!isValid(email)) return res.status(400).send({ status: false, message: "email is mandatory" })
+        if (!isValidEmail(email)) return res.status(400).send({ status: false, message: "email not valid" })
+
+        if (!isValid(password)) return res.status(400).send({ status: false, message: "password is mandatory" })
+        if (!isValidPwd(password)) return res.status(400).send({ status: false, message: "password not valid..password length should be min 8 max 15 charavters " })
+
         let userLoggedIn = await userModel.findOne({ email })
-        if (!userLoggedIn) return res.status(404).send({ status: false, message: "user not found" })
+        if (!userLoggedIn) return res.status(404).send({ status: false, message: "email not registered" })
         let checkValidPass = await bcrypt.compare(password, userLoggedIn.password)
         if (!checkValidPass) return res.status(400).send({ status: false, message: "incorrect password" })
         let token = jwt.sign(
-            { userId: userLoggedIn._id }, "e-commerceWebsite", { expiresIn: '60s' }
+            { userId: userLoggedIn._id }, "e-commerceWebsite", { expiresIn: '4d' }
         )
         return res.status(200).send({ status: true, message: "User login successfull", data: token })
     }
@@ -128,7 +134,7 @@ const getUserDetails = async function (req, res) {
 const updateUserDetails = async function (req, res) {
     try {
         const userId = req.params.userId
-        const formData = req.files
+        const files = req.files
         const updateData = req.body
 
         const { address, fname, lname, email, phone, password } = updateData
@@ -137,10 +143,9 @@ const updateUserDetails = async function (req, res) {
         let findUserId = await userModel.findById({ _id: userId })
         if (!findUserId) return res.status(404).send({ status: false, msg: "user not found" })
 
-        if ((Object.keys(updateData).length == 0) && (!formData)) return res.status(400).send({ status: false, msg: "please provide data to update" })///
-
-        if (formData) {
-            let updateProfileImage = await uploadFile(formData[0])
+        if ((Object.keys(updateData).length == 0)) return res.status(400).send({ status: false, msg: "please provide data to update" })///
+        if (files.length!=0) {
+            let updateProfileImage = await uploadFile(files[0])
             updateData.profileImage = updateProfileImage
         }
         if (fname) {
@@ -159,11 +164,11 @@ const updateUserDetails = async function (req, res) {
         }
         if (password) {
             if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is not valid" })
+            if (!isValidPwd(password)) return res.status(400).send({ status: false, message: "password not valid..password length should be min 8 max 15 charavters " })
             updateData.password = await bcrypt.hash(password, 10)
         }
         if (address) {
             let address1 = JSON.parse(address)
-            console.log(address1);
 
             const findAddress = await userModel.findOne({ _id: userId })
 
