@@ -70,7 +70,7 @@ const updateCart = async function (req, res) {
 
         if (!cartId) return res.status(400).send({ status: false, message: "Provide cartId " })
         if (!isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "invalid cart Id.." })
-        const cart1 = await cartModel.findOne({ $or: [{ _id: cartId }/*, { userId: userId }*/] })
+        const cart1 = await cartModel.findOne({ _id: cartId })
         if (!cart1) return res.status(404).send({ status: false, message: "cart does not exist.." })
         if (cart1.items.length == 0) return res.status(404).send({ status: false, message: "No Product Present In the Cart" })
 

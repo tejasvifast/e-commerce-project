@@ -1,7 +1,7 @@
 
 const productModel = require('../models/productModel')
 const { uploadFile } = require('../utils/aws')
-const { isValid, isImageFile, isValidNum, isValidBody, isValidSize, isValidString, isValidMobileNum, isValidEmail, validPwd, isValidObjectId, isValidPrice } = require('../utils/validation')
+const { isValid, isImageFile, isValidBody, isValidSize, isValidString, isValidObjectId, isValidPrice } = require('../utils/validation')
 
 //******************************************CREATE PRODUCT*************************************************************/
 
